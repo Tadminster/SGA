@@ -16,18 +16,21 @@ int main()
 	rpsGame();
 }
 
+/* 가위바위보게임 */
 void rpsGame()
 {
 	string choice[] = { "가위", "바위", "보" };
 
-	int plaWin{ 0 }, comWin{ 0 }, cnt{ 5 }, player, com;
+	//플레이어승수, 컴퓨터승수, 플레이어픽, 컴퓨터픽
+	int plaWin{ 0 }, comWin{ 0 }, player, com;
 	srand((unsigned)(time(0)));
 
-	while (cnt > 0)
+	while (1)
 	{
 		cout << "\tPlayer \tComputer" << endl;
 		cout << "점수 \t" << plaWin << "\t" << comWin << endl;
 
+		// 컴퓨터와 플레이어 픽
 		com = rand() % 3 +1;
 		player = inputRPS();
 
@@ -35,7 +38,7 @@ void rpsGame()
 		cout << "컴퓨터는 [" << com << "]" << choice[com-1] <<"를 냈다." << endl;
 		cout << "따라서 이번게임은.. ";
 
-
+		// 승패 처리
 		int result = (player - com + 3) % 3;
 
 		if (result == 0) cout << "비겼다." << endl;
@@ -43,29 +46,29 @@ void rpsGame()
 		{
 			cout << "플레이어의 승!" << endl;
 			plaWin++;
-			cnt--;
 		}
 		else
 		{
 			cout << "컴퓨터의 승..." << endl;
 			comWin++;
-			cnt--;
 		}
 		cout << endl;
 
+		// 3선시 승리처리
 		if (plaWin > 2 || comWin > 2)
 		{
 			cout << "* * * * * * * * * * * * * * * * * * * * *" << endl;
 			cout << "\"" << (plaWin > comWin ? "플레이어" : "컴퓨터") << "\"가 먼저 3점을 획득해서 승리했습니다." << endl;
+			
+			// 다시하기, 종료하기
 			int option{ inputOP() };
-
 			if (option == 1) rpsGame();
 			else exit(1);
-			break;
 		}
 	}
 }
 
+/* 플레이어 입력받기 */
 int inputRPS()
 {
 	int x;
@@ -89,6 +92,7 @@ int inputRPS()
 	return x;
 }
 
+/* 메뉴 입력받기 */
 int inputOP()
 {
 	int x;
