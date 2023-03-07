@@ -4,17 +4,39 @@
 using namespace std;
 
 void baseball();
-int pInput();
+int playerInput();
+int catcherS(int[], int[]);
+int catcherB(int[], int[], int);
+int inputRE();
 
 int main()
 {
 	cout << "숫자 야구 게임" << endl;
 
-	baseball();
+	bool bContinue = true;
+	while (bContinue)
+	{ 
+		// Main Game
+		baseball();
+
+		// Restart?
+		int iContinue{ inputRE() };
+
+		cout << endl;
+		if (iContinue == 1)
+		{
+			system("cls");
+			continue;
+		}
+		else bContinue = false;
+	}
 }
 
 void baseball()
 {
+	//
+	int cnt{ 0 }, ball{ 0 }, strike{ 0 };
+
 	// random seed initialize
 	srand(time(0));
 
@@ -46,16 +68,39 @@ void baseball()
 	}
 
 	cout << endl;
+
+
+	do 
+	{	
+		cout << endl;
+		
+		// Input
+		int input = playerInput();
+		int inputs[3] = { input / 100, input % 100 / 10, input % 10 };
+
+		/*
+		int x = input / 100,
+			y = input % 100 / 10,
+			z = input % 10;
+		*/
+
+		strike = catcherS(inputs, arr);
+		ball = catcherB(inputs, arr, strike);
+
+		cout << "시도횟수: " << cnt << ", 이번 게임 결과: " << strike << "S " << ball << "B" << endl;
+		cnt++;
+
+	} while (!(strike == 3));
+
+
 	cout << endl;
-
-	// Input
-	int x = pInput();
-	cout << "x= " << x;
-
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+	cout << "축하합니다! '" << cnt << "'번 만에 모든 숫자를 맞췄습니다." << endl;
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * *" << endl;
 }
 
 /* Player input */
-int pInput()
+int playerInput()
 {
 	string str;
 	int input{0};
@@ -93,4 +138,58 @@ int pInput()
 	}
 
 	return input;
+}
+
+/* Scoring Strikes */
+int catcherS(int inputs[], int arr[])
+{
+	int score{ 0 };
+
+	for (int i = 0; i < 3; i++)
+	{
+		//cout << "inputs[i]= " << inputs[i] << ", arr[i]= " << arr[i] << endl;
+		if (inputs[i] == arr[i]) score++;
+	}
+
+	return score;
+}
+
+/* Scoring Ball */
+int catcherB(int inputs[], int arr[], int strike)
+{
+	int score{ 0 };
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			//cout << "inputs[i]= " << inputs[i] << ", arr[i]= " << arr[i] << endl;
+			if (inputs[i] == arr[j]) score++;
+		}
+	}
+
+	return score - strike;
+}
+
+/* Inputs .. to game restarts */
+int inputRE()
+{
+	int x;
+
+	while (1)
+	{
+		cout << "[1]시작하기 [2]그만하기, 새 게임을 시작 하시겠습니까? ";
+		string str;
+		cin >> str;
+
+		if (str == "1" || str == "2")
+		{
+			x = stoi(str);
+			break;
+		}
+		else
+			cout << "잘못된 입력입니다. 숫자를 입력하세요. " << endl;
+	}
+
+	return x;
 }
