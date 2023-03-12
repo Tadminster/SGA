@@ -35,8 +35,6 @@ int main()
 
 void game()
 {
-	std::cout << "시작" << std::endl;
-
 	// Initialize player money
 	int coin{ INITIAL_COIN };
 
@@ -94,8 +92,8 @@ void game()
 
 		// Display System msg ..4 (Reveal the hidden card)
 		std::cout << "히든 카드는 ["
-			<< (cards[2].symbol == 0 ? "♠ " : 
-				cards[2].symbol == 1 ? "◆ " : 
+			<< (cards[2].symbol == 0 ? "♠ " :
+				cards[2].symbol == 1 ? "◆ " :
 				cards[2].symbol == 2 ? "♥ " :
 				cards[2].symbol == 3 ? "♣ " : "ERROE")
 			<< cards[2].number << "] 입니다." << std::endl;
