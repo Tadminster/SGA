@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include <ctime>
 #include <string>
 
@@ -7,189 +7,289 @@ const int INITIAL_COIN = 10000;
 const int MIN_BET = 0;
 const int MAX_BET = 5000;
 
+enum Symbol { SPADE, DIAMOND, HEART, CLUB, QUESTION };
+typedef struct deck
+{
+	Symbol symbol;
+	int number;
+}Deck;
+
 void game();
-void shuffle(int[]);
+void shuffle(Deck[], int, bool);
 bool menuInput();
+void displayMsg(int, int);
 int playerInput(int);
-void display(int[]);
-void funcResult(int, int&, int[]);
+void funcResult(int, int&, Deck[]);
+void printCardProto(Deck[], bool);
+void printCardBody(int, int, Symbol, int);
 
 int main()
 {
-    std::cout << "¿ù³²»Í °ÔÀÓ [??] [??]\t[??]" << std::endl;
-    std::cout << std::endl;
-    while (menuInput())
-    {
-        game();
-    }
+	std::cout << "ì›”ë‚¨ë½• ê²Œìž„" << std::endl;
+
+	while (menuInput())
+	{
+		game();
+	}
 }
 
 void game()
 {
-    // Initialize player money
-    int coin{ INITIAL_COIN };
+	std::cout << "ì‹œìž‘" << std::endl;
 
-    // Initialize the deck
-    int deck[DECK_SIZE];
-    for (int i = 0; i < DECK_SIZE; i++)
-        deck[i] = (i % 13) + 1;
+	// Initialize player money
+	int coin{ INITIAL_COIN };
 
-    // Random Seed Initialize
-    srand(time(NULL));
+	// Initialize the deck
+	Deck deck[DECK_SIZE];
+	for (int i = 0; i < DECK_SIZE; i++)
+	{
+		deck[i].number = (i % 13) + 1;
+		if (i < 13) deck[i].symbol = SPADE;
+		else if (i < 26) deck[i].symbol = DIAMOND;
+		else if (i < 39) deck[i].symbol = HEART;
+		else deck[i].symbol = CLUB;
+	}
 
-    // shuffle
-    shuffle(deck);
+	// shuffle
+	shuffle(deck, 0, false);
 
-    // Draw
-    int cardIndex = 0;
-    int remainingCards = DECK_SIZE;
-    while (1)
-    {
-        // Clear the screen
-        system("cls");
+	// Draw
+	int cardIndex = 0;
+	int remainingCards = DECK_SIZE;
+	while (1)
+	{
+		// Clear the screen
+		system("cls");
 
-        // Draw three cards
-        remainingCards -= 3;
-        int cards[3] = { deck[cardIndex++], deck[cardIndex++], deck[cardIndex++] };
+		// Draw three cards
+		remainingCards -= 3;
+		Deck cards[3] = { deck[cardIndex++], deck[cardIndex++], deck[cardIndex++] };
 
-        // If card A and card B are the same...
-        while (cards[0] == cards[1])
-        {
-            if (cards[1] == 1) cards[1] += 2;
-            else cards[1]--;
-        }
+		// If card A and card B are the same... up to 3 times
+		if (cards[0].number == cards[1].number)
+			shuffle(deck, cardIndex, true);
+		if (cards[0].number == cards[1].number)
+			shuffle(deck, cardIndex, true);
+		if (cards[0].number == cards[1].number)
+			shuffle(deck, cardIndex, true);
 
-        // Sort the cards
-        if (cards[0] > cards[1])
-            std::swap(cards[0], cards[1]);
+		// Sort the cards
+		if (cards[0].number > cards[1].number)
+			std::swap(cards[0], cards[1]);
 
-        // Display the cards
-        std::cout << "¿ù³²»Í °ÔÀÓ ";
-        display(cards);
+		// Display the cards .. 1
+		printCardProto(cards, false);
 
-        // Display UI
-        std::cout << "³» ¼ÒÁö±Ý: " << coin;
-        std::cout << ", ³²Àº Ä«µå: " << remainingCards << std::endl;
+		// Display System msg .. 2
+		displayMsg(remainingCards, coin);
 
-        // Get the player's bet
-        int betting{ playerInput(coin) };
+		// Get the player's bet
+		int betting{ playerInput(coin) };
 
-        // Reveal the hidden card
-        std::cout << std::endl;
-        std::cout << "[??] Ä«µåÀÇ ¼ýÀÚ´Â [" << cards[2] << "] ÀÔ´Ï´Ù." << std::endl;
+		// Display the Hidden cards .. 3
+		system("cls");
+		printCardProto(cards, true);
+		displayMsg(remainingCards, coin);
 
-        // Output the Result
-        funcResult(betting, coin, cards);
-        std::cout << std::endl;
+		// Display System msg ..4 (Reveal the hidden card)
+		std::cout << "ížˆë“  ì¹´ë“œëŠ” ["
+			<< (cards[2].symbol == 0 ? "â™  " : 
+				cards[2].symbol == 1 ? "â—† " : 
+				cards[2].symbol == 2 ? "â™¥ " :
+				cards[2].symbol == 3 ? "â™£ " : "ERROE")
+			<< cards[2].number << "] ìž…ë‹ˆë‹¤." << std::endl;
 
-        // Check the end std::condition
-        if (coin == 0)
-        {
-            std::cout << "¸ðµç µ·À» ÀÒ¾ú½À´Ï´Ù. ´Ù½Ã ½ÃÀÛÇÏ½Ã°Ú½À´Ï±î?" << std::endl;
-            break;
-        }
-        else if (remainingCards < 3)
-        {
-            std::cout << "³²Àº Ä«µå°¡ 3Àå ¹Ì¸¸ÀÔ´Ï´Ù. ´Ù½Ã ½ÃÀÛÇÏ½Ã°Ú½À´Ï±î?" << std::endl;
-            break;
-        }
-        else
-        {
-            std::cout << "°è¼ÓÇÏ·Á¸é ¾Æ¹«Å°³ª ÀÔ·ÂÇÏ¼¼¿ä: ";
-            std::string waiting;
-            std::cin >> waiting;
-        }
-    }
+		// Output the Result
+		funcResult(betting, coin, cards);
+		std::cout << std::endl;
+
+		// Check the end condition
+		if (coin == 0)
+		{
+			std::cout << "ëª¨ë“  ëˆì„ ìžƒì—ˆìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì‹œìž‘í•˜ì‹œê² ìŠµë‹ˆê¹Œ?" << std::endl;
+			break;
+		}
+		else if (remainingCards < 3)
+		{
+			std::cout << "ë‚¨ì€ ì¹´ë“œê°€ 3ìž¥ ë¯¸ë§Œìž…ë‹ˆë‹¤. ë‹¤ì‹œ ì‹œìž‘í•˜ì‹œê² ìŠµë‹ˆê¹Œ?" << std::endl;
+			break;
+		}
+		else
+		{
+			std::cout << "ê³„ì†í•˜ë ¤ë©´ ì•„ë¬´í‚¤ë‚˜ ìž…ë ¥í•˜ì„¸ìš”: ";
+			std::string waiting;
+			std::cin >> waiting;
+		}
+	}
 }
 
-/* Func to shuffle cards (target array) */
-void shuffle(int deck[])
+/* Func to shuffle cards*/
+void shuffle(Deck deck[], int index, bool reShuffle)
 {
-    // Shuffle card
-    for (int i = 0; i < DECK_SIZE; i++) {
-        int j = rand() % DECK_SIZE;
-        std::swap(deck[i], deck[j]);
-    }
+	// Random Seed Initialize
+	srand(time(NULL));
+
+	// Shuffle card
+	for (int i = index; i < DECK_SIZE; i++) {
+		int j;
+		if (reShuffle)
+		{
+			j = index + (rand() % (DECK_SIZE - index));
+		}
+		else
+			j = rand() % DECK_SIZE;
+		std::swap(deck[i], deck[j]);
+	}
 }
 
 /* Menu settings */
 bool menuInput()
 {
-    std::string sInput;
-    while (1)
-    {
-        std::cout << "[1]½ÃÀÛÇÏ±â, [2]±×¸¸ÇÏ±â, ¿øÇÏ´Â ¿É¼ÇÀ» ¼±ÅÃÇÏ¼¼¿ä: ";
-        std::cin >> sInput;
-        if (sInput == "1") return true;
-        else if (sInput == "2") return false;
-        else std::cout << "¿Ã¹Ù¸¥ ¿É¼ÇÀ» ¼±ÅÃÇÏ¼¼¿ä." << std::endl;
-    }
+	std::string sInput;
+	while (1)
+	{
+		std::cout << "[1] ì‹œìž‘í•˜ê¸°" << std::endl;
+		std::cout << "[2] ì¢…ë£Œí•˜ê¸°" << std::endl;
+		std::cout << "ì›í•˜ëŠ” ì˜µì…˜ì„ ì„ íƒí•˜ì„¸ìš” : ";
+		std::cin >> sInput;
+		if (sInput == "1") return true;
+		else if (sInput == "2") exit(1);
+		else std::cout << "ì˜¬ë°”ë¥¸ ì˜µì…˜ì„ ì„ íƒí•˜ì„¸ìš”." << std::endl;
+	}
 }
 
 /* Player input */
 int playerInput(int coin)
 {
-    std::string str;
-    int input{ 0 };
-    while (1)
-    {
-        std::cout << "¾ó¸¶¸¦ ¹èÆÃ ÇÏ½Ã°Ú½À´Ï±î? ";
-        std::cin >> str;
+	std::string str;
+	int input{ 0 };
+	while (1)
+	{
+		std::cout << std::endl;
+		std::cout << "ë°°íŒ… ê¸ˆì•¡ì„ ìž…ë ¥í•˜ì„¸ìš”(0~5000): ";
+		std::cin >> str;
 
-        try
-        {
-            input = stoi(str);
-        }
-        // std::string checking
-        catch (const std::invalid_argument& e)
-        {
-            std::cout << "[ERROR] '¹®ÀÚ'°¡ ÀÔ·ÂµÇ¾ú½À´Ï´Ù." << std::endl;
-            std::cout << std::endl;
-            continue;
-        }
+		try
+		{
+			input = stoi(str);
+		}
+		// std::string checking
+		catch (const std::invalid_argument& e)
+		{
+			std::cout << "[ERROR] 'ë¬¸ìž'ê°€ ìž…ë ¥ë˜ì—ˆìŠµë‹ˆë‹¤." << std::endl;
+			std::cout << std::endl;
+			continue;
+		}
 
-        //overflow checking
-        if (input < MIN_BET) std::cout << "[ERROR] '0¿ø'ÀÌ»ó ¹èÆÃÇØ¾ß ÇÕ´Ï´Ù." << std::endl;
-        else if (input > coin) std::cout << "[ERROR] °¡Áø µ·º¸´Ù ¸¹ÀÌ ¹èÆÃÇÒ ¼ö ¾ø½À´Ï´Ù." << std::endl;
-        else if (input > MAX_BET) std::cout << "[ERROR] ÃÖ´ë ¹èÆÃ±Ý¾×Àº '5000¿ø'ÀÔ´Ï´Ù." << std::endl;
-        else break;
-        std::cout << std::endl;
-    }
-    return input;
+		//overflow checking
+		if (input < MIN_BET) std::cout << "[ERROR] '0ì›'ì´ìƒ ë°°íŒ…í•´ì•¼ í•©ë‹ˆë‹¤." << std::endl;
+		else if (input > coin) std::cout << "[ERROR] ê°€ì§„ ëˆë³´ë‹¤ ë§Žì´ ë°°íŒ…í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤." << std::endl;
+		else if (input > MAX_BET) std::cout << "[ERROR] ìµœëŒ€ ë°°íŒ…ê¸ˆì•¡ì€ '5000ì›'ìž…ë‹ˆë‹¤." << std::endl;
+		else break;
+		std::cout << std::endl;
+	}
+	return input;
 }
 
-/* Display the cards */
-void display(int cards[])
+void displayMsg(int remainingCards, int coin)
 {
-    // 1st-card
-    if (cards[0] < 10) std::cout << "[ ";
-    else std::cout << "[";
-    std::cout << cards[0] << "] ";
-
-    // 2nd-card
-    if (cards[1] < 10) std::cout << "[ ";
-    else std::cout << "[";
-    std::cout << cards[1] << "] ";
-
-    // Hidden
-    std::cout << "\t[??]" << std::endl;
-    std::cout << std::endl;
+	std::cout << std::endl;
+	std::cout << "ì¹´ë“œë¥¼ 3ìž¥ ë½‘ì•˜ìŠµë‹ˆë‹¤.. ë‚¨ì€ ì¹´ë“œ: " << remainingCards << std::endl;
+	std::cout << "í”Œë ˆì´ì–´ì˜ ì†Œì§€ê¸ˆ: " << coin << std::endl;
 }
 
 /* result output */
-void funcResult(int betting, int &coin, int cards[])
+void funcResult(int betting, int& coin, Deck cards[])
 {
-    if (betting == 0)
-        std::cout << "0¿øÀ» ¹èÆÃÇß½À´Ï´Ù. ÀÌ¹ø °ÔÀÓÀº ÆÐ½ºÇÏ°Ú½À´Ï´Ù." << std::endl;
-    else if (cards[0] < cards[2] && cards[2] < cards[1])
-    {
-        int payout = betting * 2;
-        std::cout << "ÃàÇÏÇÕ´Ï´Ù. ÀÌ¹ø °ÔÀÓ¿¡¼­ ½Â¸®ÇÏ¿© " << payout << "¿øÀ» ¹ú¾ú½À´Ï´Ù." << std::endl;
-        coin += payout;
-    }
-    else
-    {
-        std::cout << "¾Æ½±°Ôµµ ÀÌ¹ø °ÔÀÓ¿¡¼­ ÆÐ¹èÇÏ¿© " << betting << "¿øÀ» ÀÒ¾ú½À´Ï´Ù." << std::endl;
-        coin = (coin - betting < 0 ? 0 : coin - betting);
-    }
+	if (betting == 0)
+		std::cout << "0ì›ì„ ë°°íŒ…í–ˆìŠµë‹ˆë‹¤. ì´ë²ˆ ê²Œìž„ì€ íŒ¨ìŠ¤í•˜ê² ìŠµë‹ˆë‹¤." << std::endl;
+	else if (cards[0].number < cards[2].number && cards[2].number < cards[1].number)
+	{
+		int payout = betting * 2;
+		std::cout << "ì¶•í•˜í•©ë‹ˆë‹¤! ì´ë²ˆ ê²Œìž„ì—ì„œ ìŠ¹ë¦¬í•˜ì—¬ '" << payout << "ì›'ì„ ë²Œì—ˆìŠµë‹ˆë‹¤." << std::endl;
+		coin += payout;
+	}
+	else
+	{
+		std::cout << "ì•„ì‰½ê²Œë„.. ì´ë²ˆ ê²Œìž„ì—ì„œ íŒ¨ë°°í•˜ì—¬ '" << betting << "ì›'ì„ ìžƒì—ˆìŠµë‹ˆë‹¤." << std::endl;
+		coin = (coin - betting < 0 ? 0 : coin - betting);
+	}
+}
+
+/* Display the cards
+!!This func must be called!! */
+void printCardProto(Deck deck[], bool hCardVisibility)
+{
+	// Cards of size (side * side)
+	int side{ 5 };
+	std::cout << "ì²«ë²ˆì§¸ ì¹´ë“œ\të‘ë²ˆì§¸ ì¹´ë“œ\t\tížˆë“  ì¹´ë“œ" << std::endl;
+
+	// Print the square card shape
+	for (int i = 1; i <= side; i++) {
+		// 1st Card
+		printCardBody(i, side, deck[0].symbol, deck[0].number);
+
+		// 2nd Card
+		std::cout << "\t";
+		printCardBody(i, side, deck[1].symbol, deck[1].number);
+
+		// 3rd Card
+		std::cout << "\t\t";
+		if (hCardVisibility == true)
+			printCardBody(i, side, deck[2].symbol, deck[2].number);
+		else
+			printCardBody(i, side, QUESTION, 0);
+
+		std::cout << std::endl;
+	}
+}
+
+/* This func should not be called! */
+void printCardBody(int i, int side, Symbol symbol, int number)
+{
+	for (int j = 1; j <= side; j++) {
+		// Outline
+		if (i == 1 || i == side || j == 1 || j == side) {
+			std::cout << "* ";
+		}
+		// Symbol
+		else if (i == 2 && j == 2)
+		{
+			switch (symbol)
+			{
+			case SPADE:
+				std::cout << "â™  ";
+				break;
+			case DIAMOND:
+				std::cout << "â—† ";
+				break;
+			case HEART:
+				std::cout << "â™¥ ";
+				break;
+			case CLUB:
+				std::cout << "â™£ ";
+				break;
+			case QUESTION:
+				std::cout << "? ";
+				break;
+			default:
+				break;
+			}
+		}
+		// Number
+		else if (i == side - 1 && j == side - 1)
+		{
+			if (number == 0)
+				std::cout << "? ";
+			else if (number < 10)
+				std::cout << number << " ";
+			else
+				std::cout << number;
+		}
+		// Inner blank space
+		else {
+			std::cout << "  ";
+		}
+	}
 }
